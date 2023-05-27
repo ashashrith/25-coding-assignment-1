@@ -2,7 +2,7 @@ const express = require("express");
 const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
 const path = require("path");
-const addDays = require("date-fns/addDays");
+const format = require("date-fns/format");
 
 const app = express();
 app.use(express.json());
@@ -27,7 +27,12 @@ const initializeDBAndServer = async () => {
 initializeDBAndServer();
 
 app.get("/todos/", async (request, response) => {
-  const { status, priority, search_q = "", category } = request.query;
+  const {
+    status = "",
+    priority = "",
+    search_q = "",
+    category = "",
+  } = request.query;
   let getTodoQuery = "";
   let data = null;
 
@@ -127,11 +132,11 @@ app.get("/todos/:todoId/", async (request, response) => {
 });
 
 app.get("/agenda/", async (request, response) => {
-  const { dueDate } = request.query;
-  const newDate = format(new date(2021, 1, 21), "yyyy-MM-dd");
+  const { date } = request.query;
+  const newDate = format(new date(date), "yyyy-MM-dd");
   const getDateQuery = `SELECT id, todo, priority, status, category, due_date as dueDate
              FROM todo WHERE due_date = ${newDate};`;
-  const dateResponse = await db.all(getDateQuery);
+  const dateResponse = await db.get(getDateQuery);
 
   if (dateResponse === undefined) {
     response.status(400);
